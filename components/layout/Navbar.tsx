@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import { mainNav } from '@/data/navigation';
 import { Container } from './Container';
+import { LiveBadge } from '@/components/ui/LiveBadge';
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
@@ -12,15 +14,22 @@ export function Navbar() {
     <header className="sticky top-0 z-50 border-b border-pirate-steel/80 bg-pirate-black/95 backdrop-blur-sm">
       <Container>
         <nav className="flex h-16 items-center justify-between lg:h-18">
-          <Link
-            href="/"
-            className="font-display text-xl font-bold tracking-tight text-white transition hover:text-pirate-gold sm:text-2xl"
-          >
-            Pirate Maxx
+          <Link href="/" className="flex items-center gap-2 transition opacity-90 hover:opacity-100">
+            <Image
+              src="/images/logo.png"
+              alt="Pirate Maxx"
+              width={160}
+              height={48}
+              className="h-10 w-auto object-contain sm:h-12"
+              priority
+            />
           </Link>
 
           {/* Desktop nav */}
-          <ul className="hidden items-center gap-8 md:flex">
+          <ul className="hidden items-center gap-6 md:flex">
+            <li>
+              <LiveBadge variant="compact" />
+            </li>
             {mainNav.map((item) =>
               item.href === '/' ? null : (
                 <li key={item.href}>
@@ -57,6 +66,9 @@ export function Navbar() {
         {/* Mobile nav */}
         {open && (
           <div className="border-t border-pirate-steel/80 py-4 md:hidden">
+            <div className="mb-3 flex justify-center">
+              <LiveBadge variant="compact" />
+            </div>
             <ul className="flex flex-col gap-2">
               {mainNav.map((item) => (
                 <li key={item.href}>

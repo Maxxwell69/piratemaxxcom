@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { mainNav } from '@/data/navigation';
 import { platformLinks } from '@/data/links';
 import { Container } from './Container';
@@ -13,8 +14,14 @@ export function Footer() {
           <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
             {/* Brand */}
             <div>
-              <Link href="/" className="font-display text-xl font-bold text-white hover:text-pirate-gold">
-                Pirate Maxx
+              <Link href="/" className="inline-block">
+                <Image
+                  src="/images/logo.png"
+                  alt="Pirate Maxx"
+                  width={140}
+                  height={42}
+                  className="h-10 w-auto object-contain opacity-90 transition hover:opacity-100"
+                />
               </Link>
               <p className="mt-3 text-sm text-gray-400">
                 Gaming. Creation. Building. Your digital command deck for streams, services, and brand.

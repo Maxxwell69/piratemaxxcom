@@ -7,6 +7,7 @@ import { StreamLinkCard } from '@/components/ui/StreamLinkCard';
 import { PortfolioCard } from '@/components/ui/PortfolioCard';
 import { CTASection } from '@/components/ui/CTASection';
 import { Container } from '@/components/layout/Container';
+import { TikTokSection } from '@/components/tiktok/TikTokSection';
 import { homeServicePreviews } from '@/data/services';
 import { platformLinks } from '@/data/links';
 import { portfolioItems } from '@/data/portfolio';
@@ -40,6 +41,7 @@ export default function HomePage() {
         primaryCta={{ label: 'Watch Streams', href: '/links' }}
         secondaryCta={{ label: 'View Services', href: '/services' }}
         tertiaryCta={{ label: 'Contact Pirate Maxx', href: '/contact' }}
+        heroImageSrc="/images/hero.png"
       />
 
       {/* Intro / About preview */}
@@ -86,6 +88,9 @@ export default function HomePage() {
           </Link>
         </div>
       </Section>
+
+      {/* TikTok profile + videos */}
+      <TikTokSection />
 
       {/* Portfolio preview */}
       <Section background="charcoal">

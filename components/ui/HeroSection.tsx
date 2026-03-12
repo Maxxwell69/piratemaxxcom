@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import Image from 'next/image';
+import { LiveBadge } from './LiveBadge';
 
 interface HeroSectionProps {
   headline: string;
@@ -6,6 +8,8 @@ interface HeroSectionProps {
   primaryCta?: { label: string; href: string };
   secondaryCta?: { label: string; href: string };
   tertiaryCta?: { label: string; href: string };
+  /** Optional hero image path (e.g. /images/hero.png). Shown as full-bleed background. */
+  heroImageSrc?: string;
 }
 
 export function HeroSection({
@@ -14,16 +18,38 @@ export function HeroSection({
   primaryCta = { label: 'Watch Streams', href: '/links' },
   secondaryCta = { label: 'View Services', href: '/services' },
   tertiaryCta = { label: 'Contact Pirate Maxx', href: '/contact' },
+  heroImageSrc,
 }: HeroSectionProps) {
   return (
     <section className="relative min-h-[85vh] flex flex-col justify-center overflow-hidden bg-pirate-charcoal texture-overlay">
-      {/* Gradient orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-pirate-crimson/20 blur-3xl" />
-        <div className="absolute top-1/2 -left-20 h-60 w-60 rounded-full bg-pirate-gold/10 blur-3xl" />
-      </div>
+      {/* Hero background image */}
+      {heroImageSrc && (
+        <>
+          <div className="absolute inset-0">
+            <Image
+              src={heroImageSrc}
+              alt=""
+              fill
+              className="object-cover object-center"
+              priority
+              sizes="100vw"
+            />
+          </div>
+          <div className="absolute inset-0 bg-pirate-black/60" aria-hidden />
+        </>
+      )}
+      {/* Gradient orbs (when no hero image) */}
+      {!heroImageSrc && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-pirate-crimson/20 blur-3xl" />
+          <div className="absolute top-1/2 -left-20 h-60 w-60 rounded-full bg-pirate-gold/10 blur-3xl" />
+        </div>
+      )}
 
       <div className="relative z-10 mx-auto max-w-4xl px-4 py-24 text-center sm:px-6 sm:py-32 lg:px-8">
+        <div className="mb-6 flex justify-center">
+          <LiveBadge />
+        </div>
         <h1 className="font-display text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
           {headline}
         </h1>

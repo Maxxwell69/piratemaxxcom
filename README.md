@@ -67,7 +67,8 @@ npm run lint
 
 3. **Environment variables**  
    In Railway project → Variables, add at least:
-   - `NEXT_PUBLIC_SITE_URL` = `https://piratemaxx.com` (or your Railway URL until custom domain is set)
+   - `NEXT_PUBLIC_SITE_URL` = `https://piratemaxx.com` (or your Railway URL until custom domain is set)  
+   - **TikTok live:** Set `TIKTOK_LIVE=true` when you’re live on TikTok; a “LIVE on TikTok” badge appears on the homepage and navbar. Restart the app to toggle (no redeploy).
 
 4. **Custom domain (piratemaxx.com)**  
    - In Railway: Project → Settings → Domains → Add custom domain (`piratemaxx.com`, `www.piratemaxx.com`).
@@ -105,8 +106,10 @@ piratemaxx.com/
 │   ├── gaming.ts
 │   └── cta.ts
 ├── lib/
-│   └── metadata.ts      # SEO metadata helper
+│   ├── metadata.ts      # SEO metadata helper
+│   └── cdn.ts            # CDN URL helper for images
 ├── public/
+│   └── images/           # Local logos/images (used when no CDN)
 ├── next.config.js
 ├── tailwind.config.ts
 ├── package.json
@@ -143,10 +146,18 @@ piratemaxx.com/
 - **Categories:** `portfolioCategories` in the same file.
 - **Images:** Replace the placeholder block in `components/ui/PortfolioCard.tsx` with Next.js `Image` and use paths in `public/` or URLs in each item.
 
-### Images
+### TikTok profile and videos
 
-- Put assets in `public/` (e.g. `public/logo.png` → use as `/logo.png`).
-- Use Next.js `Image` in components and reference `item.image` or similar from data.
+- **Profile:** Edit `data/tiktok.ts` — set `username`, `displayName`, and optionally `profileImageUrl` (e.g. `/images/tiktok-avatar.png`).
+- **Videos:** Add full TikTok video URLs to `tiktokVideoUrls` in `data/tiktok.ts` (from TikTok → Share → Copy link). They appear in the “From TikTok” section on the homepage.
+
+### Images and CDN
+
+- **Local:** Put assets in `public/` (e.g. `public/images/logo.png` → `/images/logo.png`).
+- **CDN:** Set `NEXT_PUBLIC_CDN_URL` in `.env` (e.g. Cloudinary, `https://cdn.piratemaxx.com`, or imgix). Then use:
+  - **`getCdnUrl(path)`** from `lib/cdn.ts` to build full image URLs (e.g. `getCdnUrl('images/logo.png')`).
+  - **`<CdnImage src="images/logo.png" alt="..." width={200} height={80} />`** from `components/ui/CdnImage.tsx` for optimized Next.js images.
+- If `NEXT_PUBLIC_CDN_URL` is not set, URLs fall back to site-relative paths (served from `public/`).
 
 ---
 
