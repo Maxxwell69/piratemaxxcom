@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { HeroSection } from '@/components/ui/HeroSection';
+import { SocialIcons } from '@/components/ui/SocialIcons';
 import { Section } from '@/components/layout/Section';
 import { SectionHeader } from '@/components/layout/SectionHeader';
 import { ServiceCard } from '@/components/ui/ServiceCard';
@@ -43,6 +44,11 @@ export default function HomePage() {
         tertiaryCta={{ label: 'Contact Pirate Maxx', href: '/contact' }}
         heroImageSrc="/images/hero.png"
       />
+
+      {/* Social links under hero */}
+      <div className="border-t border-pirate-steel/50 bg-pirate-charcoal py-6">
+        <SocialIcons links={platformLinks} />
+      </div>
 
       {/* Intro / About preview */}
       <Section background="charcoal">

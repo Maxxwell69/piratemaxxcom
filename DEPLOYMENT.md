@@ -1,28 +1,27 @@
-# Railway Deployment Notes — Pirate Maxx
+# Vercel Deployment Notes — Pirate Maxx
 
 ## Quick deploy
 
-1. Push this repo to GitHub (or connect your Git provider in Railway).
-2. In Railway: **New Project** → **Deploy from GitHub** → select repo.
-3. Railway will detect Next.js and run `npm install`, `npm run build`, and `npm start`.
-4. Add variable: `NEXT_PUBLIC_SITE_URL` = your Railway URL or `https://piratemaxx.com` once domain is set.
-5. Deploy. Use the generated `.railway.app` URL until you add a custom domain.
+1. Push this repo to GitHub (or connect your Git provider in Vercel).
+2. In Vercel: **Add New** → **Project** → **Import** this repository.
+3. Vercel will detect Next.js and run `npm install` and `npm run build`; no start command needed.
+4. Add variable: `NEXT_PUBLIC_SITE_URL` = your Vercel URL or `https://piratemaxx.com` once domain is set.
+5. Deploy. Use the generated `.vercel.app` URL until you add a custom domain.
 
 ## Production settings
 
-- **Node:** 18+ (Railway/Nixpacks typically use Node 20).
-- **Build command:** `npm run build` (default for Next.js).
-- **Start command:** `npm start` (serves the standalone output from `next build`).
-- **Output:** This project uses `output: 'standalone'` in `next.config.js` for smaller, Railway-friendly deploys.
+- **Node:** 18+ (Vercel uses a compatible Node version by default).
+- **Build command:** `npm run build` (Vercel’s Next.js preset).
+- **Output:** Standard Next.js build; no standalone output required on Vercel.
 
 ## Custom domain (piratemaxx.com)
 
-1. In Railway: Project → **Settings** → **Domains** → **Custom Domain**.
+1. In Vercel: Project → **Settings** → **Domains** → **Add**.
 2. Add `piratemaxx.com` and optionally `www.piratemaxx.com`.
 3. In your DNS (e.g. Cloudflare, Namecheap):
-   - Add CNAME for `www` → Railway’s provided target.
-   - For apex `piratemaxx.com`, use Railway’s recommended A/CNAME or CNAME flattening.
-4. Enable SSL in Railway (usually automatic).
+   - Add CNAME for `www` → `cname.vercel-dns.com` (or the target Vercel shows).
+   - For apex `piratemaxx.com`, use Vercel’s A records or CNAME flattening as shown in the dashboard.
+4. SSL is automatic on Vercel.
 
 ## Environment variables
 
@@ -39,7 +38,7 @@ Optional (when you add contact/email):
 
 - **Build fails:** Ensure `npm run build` works locally. Check Node version (18+).
 - **Blank page / 404:** Confirm root route is deployed and `NEXT_PUBLIC_SITE_URL` is set if you use it in client code.
-- **Slow first load:** Standalone build and Railway’s default resources are usually sufficient; consider upgrading plan if needed.
+- **Slow first load:** Vercel’s edge and serverless setup is optimized by default; check Analytics if you need to tune.
 
 ## After deploy
 

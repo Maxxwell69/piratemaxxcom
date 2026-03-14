@@ -55,27 +55,27 @@ npm run lint
 
 ---
 
-## Deploying on Railway
+## Deploying on Vercel
 
 1. **Connect repo**  
-   In [Railway](https://railway.app), create a new project and connect this repository.
+   In [Vercel](https://vercel.com), sign in with GitHub (or your Git provider), then **Add New** → **Project** and import this repository.
 
-2. **Build & start**  
-   Railway will detect Next.js and run:
-   - **Build:** `npm run build` (or use Nixpacks default)
-   - **Start:** `npm start`
+2. **Build & deploy**  
+   Vercel will detect Next.js and run:
+   - **Build:** `npm run build`
+   - **Deploy:** Automatic; no start command needed (Vercel runs the Next.js server).
 
 3. **Environment variables**  
-   In Railway project → Variables, add at least:
-   - `NEXT_PUBLIC_SITE_URL` = `https://piratemaxx.com` (or your Railway URL until custom domain is set)  
-   - **TikTok live:** Set `TIKTOK_LIVE=true` when you’re live on TikTok; a “LIVE on TikTok” badge appears on the homepage and navbar. Restart the app to toggle (no redeploy).
+   In Vercel: Project → **Settings** → **Environment Variables**, add at least:
+   - `NEXT_PUBLIC_SITE_URL` = `https://piratemaxx.com` (or your Vercel URL until custom domain is set)  
+   - **TikTok live:** Set `TIKTOK_LIVE=true` when you’re live on TikTok; a “LIVE on TikTok” badge appears on the homepage and navbar. Redeploy or use Vercel’s env UI to toggle.
 
 4. **Custom domain (piratemaxx.com)**  
-   - In Railway: Project → Settings → Domains → Add custom domain (`piratemaxx.com`, `www.piratemaxx.com`).
-   - In your DNS provider, add the CNAME (or A record) as shown by Railway.
+   - In Vercel: Project → **Settings** → **Domains** → Add `piratemaxx.com` and optionally `www.piratemaxx.com`.
+   - In your DNS provider, add the CNAME or A records as shown by Vercel.
 
-5. **Optional config**  
-   - `railway.json` and `nixpacks.toml` are included for explicit build/start behavior; Railway’s auto-detect often works without them.
+5. **No extra config**  
+   No `vercel.json` is required; Vercel’s Next.js preset handles build and run automatically.
 
 ---
 
@@ -113,8 +113,6 @@ piratemaxx.com/
 ├── next.config.js
 ├── tailwind.config.ts
 ├── package.json
-├── railway.json
-├── nixpacks.toml
 ├── .env.example
 └── README.md
 ```
