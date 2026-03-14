@@ -47,18 +47,41 @@ export default function GamingPage() {
       <Section background="default">
         <SectionHeader title="Featured Games" subtitle="Current and recurring focus." />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {featuredGames.map((game) => (
-            <div
-              key={game.id}
-              className="rounded-lg border border-pirate-steel bg-pirate-charcoal p-5"
-            >
-              <h3 className="font-semibold text-white">{game.name}</h3>
-              {game.platform && (
-                <span className="text-xs text-pirate-gold">{game.platform}</span>
-              )}
-              <p className="mt-2 text-sm text-gray-400">{game.description}</p>
-            </div>
-          ))}
+          {featuredGames.map((game) => {
+            const cardContent = (
+              <>
+                <h3 className="font-semibold text-white group-hover:text-pirate-gold transition">
+                  {game.name}
+                </h3>
+                {game.platform && (
+                  <span className="text-xs text-pirate-gold">{game.platform}</span>
+                )}
+                <p className="mt-2 text-sm text-gray-400">{game.description}</p>
+                {game.url && (
+                  <span className="mt-3 inline-block text-sm text-pirate-gold opacity-0 group-hover:opacity-100 transition">
+                    Visit game →
+                  </span>
+                )}
+              </>
+            );
+            const cardClass =
+              'rounded-lg border border-pirate-steel bg-pirate-charcoal p-5 transition hover:border-pirate-gold/50 group';
+            return game.url ? (
+              <a
+                key={game.id}
+                href={game.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cardClass}
+              >
+                {cardContent}
+              </a>
+            ) : (
+              <div key={game.id} className={cardClass}>
+                {cardContent}
+              </div>
+            );
+          })}
         </div>
       </Section>
 
