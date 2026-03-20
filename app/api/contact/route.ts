@@ -186,14 +186,12 @@ export async function POST(request: NextRequest) {
     ]);
 
     const succeeded = results
-      .filter((r): r is PromiseFulfilledResult<string> => r.status === 'fulfilled')
-      .map((r) => r.value)
+      .flatMap((r) => (r.status === 'fulfilled' ? [r.value] : []))
       .filter((c) => !c.endsWith('-skipped'));
 
     if (succeeded.length === 0) {
       const failures = results
-        .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
-        .map((r) => r.reason?.message ?? 'Unknown error');
+        .flatMap((r) => (r.status === 'rejected' ? [r.reason?.message ?? 'Unknown error'] : []));
       console.error('Contact submission failed on all configured channels:', failures);
       return NextResponse.json({ error: 'Failed to process contact submission' }, { status: 500 });
     }
