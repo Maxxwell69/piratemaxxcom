@@ -88,6 +88,35 @@ async function sendToGhl(payload: ContactPayload) {
     id?: string;
   };
   const contactId = contactJson.contact?.id ?? contactJson.id;
+
+  if (contactId) {
+    const noteBody = [
+      `Source: piratemaxx.com/contact`,
+      payload.service ? `Service: ${payload.service}` : '',
+      '',
+      payload.message,
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    // Best effort note creation so the full contact message is visible in GHL.
+    const noteRes = await fetch(`${GHL_BASE_URL}/contacts/${contactId}/notes`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        Version: apiVersion,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({ body: noteBody }),
+    });
+
+    if (!noteRes.ok) {
+      const noteErrText = await noteRes.text();
+      console.error(`GHL note create failed (${noteRes.status}): ${noteErrText}`);
+    }
+  }
+
   const pipelineId = process.env.GHL_PIPELINE_ID;
   const stageId =
     leadType === 'quote'
