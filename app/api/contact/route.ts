@@ -122,6 +122,14 @@ async function sendToGhl(payload: ContactPayload) {
     leadType === 'quote'
       ? process.env.GHL_QUOTE_STAGE_ID ?? process.env.GHL_STAGE_ID
       : process.env.GHL_STAGE_ID;
+  const monetaryValueRaw =
+    leadType === 'quote'
+      ? process.env.GHL_QUOTE_MONETARY_VALUE
+      : process.env.GHL_CLIENT_MONETARY_VALUE;
+  const monetaryValue =
+    monetaryValueRaw && !Number.isNaN(Number(monetaryValueRaw))
+      ? Number(monetaryValueRaw)
+      : undefined;
 
   if (!contactId || !pipelineId || !stageId) {
     return;
@@ -143,6 +151,7 @@ async function sendToGhl(payload: ContactPayload) {
       name: `${payload.name} - ${payload.service || 'General Inquiry'}`,
       source: 'piratemaxx.com/contact',
       status: 'open',
+      ...(monetaryValue !== undefined ? { monetaryValue } : {}),
     }),
   });
 

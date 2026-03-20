@@ -14,6 +14,25 @@ export const metadata = buildMetadata({
 });
 
 export default function LinksPage() {
+  const funnelLinks = [
+    {
+      id: 'ghl-client-funnel',
+      name: 'Start Your Project',
+      href: process.env.NEXT_PUBLIC_GHL_CLIENT_FUNNEL_URL,
+      description: 'Client intake funnel for websites, graphics, and branding.',
+      icon: '🧭',
+    },
+    {
+      id: 'ghl-quote-funnel',
+      name: 'Get a Quote',
+      href: process.env.NEXT_PUBLIC_GHL_QUOTE_FUNNEL_URL,
+      description: 'Quote request funnel for scoped project pricing.',
+      icon: '💰',
+    },
+  ].filter((link): link is { id: string; name: string; href: string; description: string; icon: string } =>
+    Boolean(link.href)
+  );
+
   return (
     <>
       <PageBanner
@@ -32,6 +51,14 @@ export default function LinksPage() {
       <Section background="default">
         <Container size="narrow">
           <div className="space-y-4">
+            {funnelLinks.length > 0 && (
+              <div className="mb-6 space-y-4">
+                {funnelLinks.map((link) => (
+                  <StreamLinkCard key={link.id} link={link} size="large" />
+                ))}
+                <div className="border-t border-pirate-steel/60 pt-2" />
+              </div>
+            )}
             {platformLinks.map((link) => (
               <StreamLinkCard key={link.id} link={link} size="large" />
             ))}
