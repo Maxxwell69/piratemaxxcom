@@ -58,14 +58,14 @@ export default function GamingPage() {
                 )}
                 <p className="mt-2 text-sm text-gray-400">{game.description}</p>
                 {game.url && (
-                  <span className="mt-3 inline-block text-sm text-pirate-gold opacity-0 group-hover:opacity-100 transition">
-                    Visit game →
+                  <span className="mt-3 inline-block text-sm font-medium text-pirate-gold hover:underline">
+                    Visit {game.name} →
                   </span>
                 )}
               </>
             );
             const cardClass =
-              'rounded-lg border border-pirate-steel bg-pirate-charcoal p-5 transition hover:border-pirate-gold/50 group';
+              'rounded-lg border border-pirate-steel bg-pirate-charcoal p-5 transition hover:border-pirate-gold/50 group block';
             return game.url ? (
               <a
                 key={game.id}
