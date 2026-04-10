@@ -78,6 +78,14 @@ export function Footer() {
 
           <div className="mt-12 border-t border-pirate-steel pt-8 text-center text-sm text-gray-500">
             © {currentYear} Pirate Maxx. All rights reserved.
+            <div className="mt-3">
+              <Link
+                href="/admin/login"
+                className="text-xs text-gray-600 hover:text-gray-400 transition"
+              >
+                Admin
+              </Link>
+            </div>
           </div>
         </div>
       </Container>
