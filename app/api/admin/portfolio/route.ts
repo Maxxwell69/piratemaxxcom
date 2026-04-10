@@ -33,6 +33,7 @@ export async function GET() {
   return NextResponse.json({
     userItems,
     storageReady: portfolioStorageConfigured(),
+    blobReady: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
   });
 }
 
@@ -58,6 +59,8 @@ export async function POST(request: NextRequest) {
     const link = typeof body.link === 'string' ? body.link.trim() : '';
     const imagePlaceholder =
       typeof body.imagePlaceholder === 'string' ? body.imagePlaceholder.trim() : '';
+    const imageUrl = typeof body.imageUrl === 'string' ? body.imageUrl.trim() : '';
+    const videoUrl = typeof body.videoUrl === 'string' ? body.videoUrl.trim() : '';
     const tagsRaw = typeof body.tags === 'string' ? body.tags : '';
 
     if (!title || !description) {
@@ -81,6 +84,8 @@ export async function POST(request: NextRequest) {
       description,
       ...(link ? { link } : {}),
       ...(imagePlaceholder ? { imagePlaceholder } : {}),
+      ...(imageUrl ? { imageUrl } : {}),
+      ...(videoUrl ? { videoUrl } : {}),
       ...(tags?.length ? { tags } : {}),
     };
 

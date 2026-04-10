@@ -5,7 +5,12 @@ export interface PortfolioItem {
   title: string;
   category: PortfolioCategory;
   description: string;
+  /** Shown when no imageUrl (seed items / fallback). */
   imagePlaceholder?: string;
+  /** Public image URL (e.g. Vercel Blob or CDN). */
+  imageUrl?: string;
+  /** Video archive: YouTube/Vimeo link, direct .mp4/.webm URL, or uploaded file URL. */
+  videoUrl?: string;
   link?: string;
   tags?: string[];
 }

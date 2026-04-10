@@ -142,6 +142,7 @@ piratemaxx.com/
 
 - **Seed items (in repo):** `data/portfolio.ts` (`portfolioItems`) — default projects shipped with the site.
 - **Admin-added items:** `/admin/portfolio` after setting `ADMIN_JWT_SECRET`, `ADMIN_PORTFOLIO_PASSWORD`, and (on Vercel) `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`. Locally, without Redis, additions save to `data/portfolio-user.json` (gitignored).
+- **Uploads:** Set `BLOB_READ_WRITE_TOKEN` from Vercel → Storage → Blob to upload cover images and video files from the admin form; or paste image/video URLs (e.g. YouTube) without Blob.
 - **Categories:** `portfolioCategories` in the same file.
 - **Images:** Replace the placeholder block in `components/ui/PortfolioCard.tsx` with Next.js `Image` and use paths in `public/` or URLs in each item.
 

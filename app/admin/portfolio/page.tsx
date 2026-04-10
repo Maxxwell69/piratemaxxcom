@@ -2,14 +2,31 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { upload } from '@vercel/blob/client';
 import type { PortfolioItem, PortfolioCategory } from '@/data/portfolio';
 import { portfolioCategories } from '@/data/portfolio';
+
+function safeFilename(name: string) {
+  const base = name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
+  return base || 'file';
+}
+
+async function uploadToBlob(file: File, prefix: 'images' | 'video') {
+  const pathname = `portfolio/${prefix}/${Date.now()}-${safeFilename(file.name)}`;
+  return upload(pathname, file, {
+    access: 'public',
+    handleUploadUrl: '/api/admin/blob',
+    multipart: file.size > 12 * 1024 * 1024,
+  });
+}
 
 export default function AdminPortfolioPage() {
   const router = useRouter();
   const [userItems, setUserItems] = useState<PortfolioItem[]>([]);
   const [storageReady, setStorageReady] = useState(true);
+  const [blobReady, setBlobReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -19,7 +36,12 @@ export default function AdminPortfolioPage() {
   const [description, setDescription] = useState('');
   const [link, setLink] = useState('');
   const [imagePlaceholder, setImagePlaceholder] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
   const [tags, setTags] = useState('');
+
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -32,6 +54,7 @@ export default function AdminPortfolioPage() {
       const data = await res.json();
       setUserItems(data.userItems ?? []);
       setStorageReady(data.storageReady !== false);
+      setBlobReady(data.blobReady === true);
     } catch {
       setMessage('Could not load items.');
     } finally {
@@ -49,6 +72,48 @@ export default function AdminPortfolioPage() {
     router.refresh();
   }
 
+  async function onPickImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setMessage('Choose an image file (PNG, JPG, WebP, GIF).');
+      return;
+    }
+    setMessage('');
+    setUploadingImage(true);
+    try {
+      const blob = await uploadToBlob(file, 'images');
+      setImageUrl(blob.url);
+      setMessage('Image uploaded.');
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Image upload failed');
+    } finally {
+      setUploadingImage(false);
+    }
+  }
+
+  async function onPickVideo(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('video/')) {
+      setMessage('Choose a video file (MP4, WebM, or QuickTime).');
+      return;
+    }
+    setMessage('');
+    setUploadingVideo(true);
+    try {
+      const blob = await uploadToBlob(file, 'video');
+      setVideoUrl(blob.url);
+      setMessage('Video uploaded.');
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Video upload failed');
+    } finally {
+      setUploadingVideo(false);
+    }
+  }
+
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     setMessage('');
@@ -63,6 +128,8 @@ export default function AdminPortfolioPage() {
           description,
           link: link || undefined,
           imagePlaceholder: imagePlaceholder || undefined,
+          imageUrl: imageUrl || undefined,
+          videoUrl: videoUrl || undefined,
           tags,
         }),
       });
@@ -75,6 +142,8 @@ export default function AdminPortfolioPage() {
       setDescription('');
       setLink('');
       setImagePlaceholder('');
+      setImageUrl('');
+      setVideoUrl('');
       setTags('');
       setMessage('Added to portfolio.');
       await load();
@@ -126,6 +195,15 @@ export default function AdminPortfolioPage() {
           </div>
         )}
 
+        {!blobReady && (
+          <div className="mt-4 rounded-md border border-sky-500/40 bg-sky-950/30 px-4 py-3 text-sm text-sky-200">
+            <strong className="text-sky-100">Uploads:</strong> Add{' '}
+            <code className="text-sky-100">BLOB_READ_WRITE_TOKEN</code> from Vercel → Storage → Blob
+            (create a store, then paste the token). Without it, use the image/video URL fields below
+            to paste links (e.g. YouTube, Imgur, or any https image).
+          </div>
+        )}
+
         {loading ? (
           <p className="mt-8 text-gray-400">Loading…</p>
         ) : (
@@ -133,8 +211,8 @@ export default function AdminPortfolioPage() {
             <section className="mt-8 rounded-lg border border-pirate-steel bg-pirate-charcoal p-6">
               <h2 className="font-semibold text-white">Add project</h2>
               <p className="mt-1 text-sm text-gray-400">
-                Items you add appear on the site after the built-in seed projects from{' '}
-                <code className="text-xs text-gray-500">data/portfolio.ts</code>.
+                Seed projects stay in <code className="text-xs text-gray-500">data/portfolio.ts</code>.
+                Upload screenshots or videos from your computer, or paste URLs.
               </p>
               <form onSubmit={handleAdd} className="mt-4 space-y-4">
                 <div>
@@ -170,8 +248,64 @@ export default function AdminPortfolioPage() {
                     className="mt-1 w-full rounded-md border border-pirate-steel bg-pirate-black px-3 py-2 text-white"
                   />
                 </div>
+
+                <div className="rounded-md border border-pirate-steel/60 bg-pirate-black/50 p-4 space-y-3">
+                  <p className="text-sm font-medium text-white">Cover image</p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <label className="cursor-pointer rounded-md border border-pirate-gold/50 px-4 py-2 text-sm text-pirate-gold hover:bg-pirate-gold/10">
+                      {uploadingImage ? 'Uploading…' : 'Upload image / screenshot'}
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        className="hidden"
+                        onChange={onPickImage}
+                        disabled={!blobReady || uploadingImage}
+                      />
+                    </label>
+                    {!blobReady && (
+                      <span className="text-xs text-gray-500">or paste URL →</span>
+                    )}
+                  </div>
+                  <input
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    placeholder="https://… (image URL if not uploading)"
+                    className="w-full rounded-md border border-pirate-steel bg-pirate-black px-3 py-2 text-sm text-white"
+                  />
+                  {imageUrl && (
+                    <div className="relative mt-2 aspect-video w-full max-w-md overflow-hidden rounded-md border border-pirate-steel">
+                      <Image src={imageUrl} alt="Preview" fill className="object-cover" unoptimized />
+                    </div>
+                  )}
+                </div>
+
+                <div className="rounded-md border border-pirate-steel/60 bg-pirate-black/50 p-4 space-y-3">
+                  <p className="text-sm font-medium text-white">Video archive</p>
+                  <p className="text-xs text-gray-500">
+                    Upload an MP4/WebM clip, or paste a YouTube link, Twitch VOD, or direct video URL.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <label className="cursor-pointer rounded-md border border-pirate-gold/50 px-4 py-2 text-sm text-pirate-gold hover:bg-pirate-gold/10">
+                      {uploadingVideo ? 'Uploading…' : 'Upload video file'}
+                      <input
+                        type="file"
+                        accept="video/mp4,video/webm,video/quicktime"
+                        className="hidden"
+                        onChange={onPickVideo}
+                        disabled={!blobReady || uploadingVideo}
+                      />
+                    </label>
+                  </div>
+                  <input
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    placeholder="https://youtube.com/… or direct .mp4 URL"
+                    className="w-full rounded-md border border-pirate-steel bg-pirate-black px-3 py-2 text-sm text-white"
+                  />
+                </div>
+
                 <div>
-                  <label className="block text-sm text-gray-300">Link (optional)</label>
+                  <label className="block text-sm text-gray-300">Project link (optional)</label>
                   <input
                     value={link}
                     onChange={(e) => setLink(e.target.value)}
@@ -180,11 +314,13 @@ export default function AdminPortfolioPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-300">Image label (optional)</label>
+                  <label className="block text-sm text-gray-300">
+                    Image label fallback (optional, if no image URL)
+                  </label>
                   <input
                     value={imagePlaceholder}
                     onChange={(e) => setImagePlaceholder(e.target.value)}
-                    placeholder="Short label for card placeholder"
+                    placeholder="Short label when no image"
                     className="mt-1 w-full rounded-md border border-pirate-steel bg-pirate-black px-3 py-2 text-white"
                   />
                 </div>
@@ -217,9 +353,25 @@ export default function AdminPortfolioPage() {
                     key={item.id}
                     className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-pirate-steel bg-pirate-charcoal px-4 py-3"
                   >
-                    <div>
-                      <span className="font-medium text-white">{item.title}</span>
-                      <span className="ml-2 text-xs text-gray-500">{item.category}</span>
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      {item.imageUrl && (
+                        <div className="relative h-12 w-20 shrink-0 overflow-hidden rounded border border-pirate-steel">
+                          <Image
+                            src={item.imageUrl}
+                            alt=""
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <span className="font-medium text-white">{item.title}</span>
+                        <span className="ml-2 text-xs text-gray-500">{item.category}</span>
+                        {item.videoUrl && (
+                          <span className="ml-2 text-xs text-pirate-gold">video</span>
+                        )}
+                      </div>
                     </div>
                     <button
                       type="button"
