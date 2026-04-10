@@ -11,7 +11,7 @@ import { Container } from '@/components/layout/Container';
 import { TikTokSection } from '@/components/tiktok/TikTokSection';
 import { homeServicePreviews } from '@/data/services';
 import { platformLinks } from '@/data/links';
-import { portfolioItems } from '@/data/portfolio';
+import { getMergedPortfolioItems } from '@/lib/portfolio-data';
 
 const heroHeadline = 'Pirate Maxx';
 const heroSubhead =
@@ -33,7 +33,9 @@ const whyCopy = {
   ],
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const portfolioPreview = (await getMergedPortfolioItems()).slice(0, 4);
+
   return (
     <>
       <HeroSection
@@ -105,7 +107,7 @@ export default function HomePage() {
           subtitle="Websites, graphics, stream assets, and gaming branding."
         />
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {portfolioItems.slice(0, 4).map((item) => (
+          {portfolioPreview.map((item) => (
             <PortfolioCard key={item.id} item={item} />
           ))}
         </div>

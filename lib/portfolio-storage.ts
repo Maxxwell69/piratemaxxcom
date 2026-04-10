@@ -1,0 +1,75 @@
+import { promises as fs } from 'fs';
+import path from 'path';
+import { Redis } from '@upstash/redis';
+import type { PortfolioItem } from '@/data/portfolio';
+
+const REDIS_KEY = 'portfolio:user_items';
+const USER_FILE = path.join(process.cwd(), 'data', 'portfolio-user.json');
+
+function redis(): Redis | null {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  return new Redis({ url, token });
+}
+
+async function readFromFile(): Promise<PortfolioItem[]> {
+  if (process.env.NODE_ENV !== 'development') return [];
+  try {
+    const raw = await fs.readFile(USER_FILE, 'utf8');
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed as PortfolioItem[];
+  } catch {
+    return [];
+  }
+}
+
+async function writeToFile(items: PortfolioItem[]): Promise<void> {
+  if (process.env.NODE_ENV !== 'development') {
+    throw new Error('File storage is only available in local development.');
+  }
+  await fs.writeFile(USER_FILE, JSON.stringify(items, null, 2), 'utf8');
+}
+
+export function portfolioStorageConfigured(): boolean {
+  return Boolean(redis()) || process.env.NODE_ENV === 'development';
+}
+
+export async function getUserPortfolioItems(): Promise<PortfolioItem[]> {
+  const r = redis();
+  if (r) {
+    const data = await r.get<string>(REDIS_KEY);
+    if (!data) return [];
+    try {
+      const parsed = JSON.parse(data) as unknown;
+      return Array.isArray(parsed) ? (parsed as PortfolioItem[]) : [];
+    } catch {
+      return [];
+    }
+  }
+  return readFromFile();
+}
+
+export async function setUserPortfolioItems(items: PortfolioItem[]): Promise<void> {
+  const r = redis();
+  if (r) {
+    await r.set(REDIS_KEY, JSON.stringify(items));
+    return;
+  }
+  await writeToFile(items);
+}
+
+export async function appendUserPortfolioItem(item: PortfolioItem): Promise<void> {
+  const items = await getUserPortfolioItems();
+  items.push(item);
+  await setUserPortfolioItems(items);
+}
+
+export async function removeUserPortfolioItem(id: string): Promise<boolean> {
+  const items = await getUserPortfolioItems();
+  const next = items.filter((i) => i.id !== id);
+  if (next.length === items.length) return false;
+  await setUserPortfolioItems(next);
+  return true;
+}
