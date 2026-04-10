@@ -6,10 +6,27 @@ import type { PortfolioItem } from '@/data/portfolio';
 const REDIS_KEY = 'portfolio:user_items';
 const USER_FILE = path.join(process.cwd(), 'data', 'portfolio-user.json');
 
+/** Vercel/env UIs sometimes save values with wrapping quotes — strip them. */
+function normalizeEnvValue(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  let v = value.trim();
+  while (
+    (v.startsWith('"') && v.endsWith('"')) ||
+    (v.startsWith("'") && v.endsWith("'"))
+  ) {
+    v = v.slice(1, -1).trim();
+  }
+  return v || undefined;
+}
+
 function redis(): Redis | null {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const url = normalizeEnvValue(process.env.UPSTASH_REDIS_REST_URL);
+  const token = normalizeEnvValue(process.env.UPSTASH_REDIS_REST_TOKEN);
   if (!url || !token) return null;
+  if (!url.startsWith('https://')) {
+    console.error('UPSTASH_REDIS_REST_URL must start with https://');
+    return null;
+  }
   return new Redis({ url, token });
 }
 
