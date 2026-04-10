@@ -10,7 +10,7 @@ Modern pirate-themed personal brand and business site for **Pirate Maxx**: gamin
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20+ (required by dependencies such as Resend)
 - npm (or yarn / pnpm)
 
 ### Setup
