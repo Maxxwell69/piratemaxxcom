@@ -13,6 +13,9 @@ import { homeServicePreviews } from '@/data/services';
 import { platformLinks } from '@/data/links';
 import { getMergedPortfolioItems } from '@/lib/portfolio-data';
 
+/** Portfolio preview reads Upstash; avoid stale static HTML after admin saves. */
+export const dynamic = 'force-dynamic';
+
 const heroHeadline = 'Pirate Maxx';
 const heroSubhead =
   'Gaming, streaming, websites, graphics, and digital brand building. One captain. One command deck.';
