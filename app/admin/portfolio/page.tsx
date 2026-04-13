@@ -347,7 +347,7 @@ export default function AdminPortfolioPage() {
                   <input
                     value={imageUrl}
                     onChange={(e) => setImageUrl(e.target.value)}
-                    placeholder="https://… (image URL if not uploading)"
+                    placeholder="/images/portfolio/rustmaxx.png or https://…"
                     className="w-full rounded-md border border-pirate-steel bg-pirate-black px-3 py-2 text-sm text-white"
                   />
                   {imageUrl && (
