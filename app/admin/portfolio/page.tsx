@@ -14,12 +14,36 @@ function safeFilename(name: string) {
   return base || 'file';
 }
 
+const SERVER_PUT_MAX = 4 * 1024 * 1024;
+
+/**
+ * Prefer same-origin server upload (avoids browser CORS to vercel.com from www.piratemaxx.com).
+ * Larger files fall back to client upload with an absolute handle URL (may still fail over ~4.5MB on Hobby).
+ */
 async function uploadToBlob(file: File, prefix: 'images' | 'video') {
+  if (file.size <= SERVER_PUT_MAX) {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('prefix', prefix);
+    const res = await fetch('/api/admin/blob-put', {
+      method: 'POST',
+      body: fd,
+      credentials: 'include',
+    });
+    const data = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+    if (!res.ok) {
+      throw new Error(typeof data.error === 'string' ? data.error : 'Upload failed');
+    }
+    if (!data.url) throw new Error('Upload did not return a URL');
+    return { url: data.url };
+  }
+
   const pathname = `portfolio/${prefix}/${Date.now()}-${safeFilename(file.name)}`;
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
   return upload(pathname, file, {
     access: 'public',
-    handleUploadUrl: '/api/admin/blob',
-    multipart: file.size > 12 * 1024 * 1024,
+    handleUploadUrl: `${origin}/api/admin/blob`,
+    multipart: true,
   });
 }
 
