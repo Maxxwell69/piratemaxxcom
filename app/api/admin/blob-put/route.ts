@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
 import { cookies } from 'next/headers';
 import { verifyAdminSessionToken, ADMIN_SESSION_COOKIE_NAME } from '@/lib/admin-auth';
+import { getBlobReadWriteToken } from '@/lib/blob-token';
 
 const ALLOWED_IMAGE = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const ALLOWED_VIDEO = ['video/mp4', 'video/webm', 'video/quicktime'];
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
   const denied = await requireAdmin();
   if (denied) return denied;
 
-  const rw = process.env.BLOB_READ_WRITE_TOKEN;
+  const rw = getBlobReadWriteToken();
   if (!rw) {
     return NextResponse.json({ error: 'Blob storage not configured' }, { status: 503 });
   }

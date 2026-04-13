@@ -9,6 +9,7 @@ import {
   removeUserPortfolioItem,
   updateUserPortfolioItem,
 } from '@/lib/portfolio-storage';
+import { blobConfigured } from '@/lib/blob-token';
 import type { PortfolioCategory, PortfolioItem } from '@/data/portfolio';
 
 const CATEGORIES: PortfolioCategory[] = [
@@ -141,7 +142,7 @@ export async function GET() {
   return NextResponse.json({
     userItems,
     storageReady: portfolioStorageConfigured(),
-    blobReady: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
+    blobReady: blobConfigured(),
   });
 }
 

@@ -290,9 +290,10 @@ export default function AdminPortfolioPage() {
         {!blobReady && (
           <div className="mt-4 rounded-md border border-sky-500/40 bg-sky-950/30 px-4 py-3 text-sm text-sky-200">
             <strong className="text-sky-100">Uploads:</strong> Add{' '}
-            <code className="text-sky-100">BLOB_READ_WRITE_TOKEN</code> from Vercel → Storage → Blob
-            (create a store, then paste the token). Without it, use the image/video URL fields below
-            to paste links (e.g. YouTube, Imgur, or any https image).
+            <code className="text-sky-100">BLOB_READ_WRITE_TOKEN</code> (or{' '}
+            <code className="text-sky-100">pirate1_READ_WRITE_TOKEN</code>) from Vercel → Storage →
+            Blob. Without it, use the image/video URL fields below to paste links (e.g. YouTube,
+            Imgur, or any https image).
           </div>
         )}
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import { verifyAdminSessionToken, ADMIN_SESSION_COOKIE_NAME } from '@/lib/admin-auth';
+import { getBlobReadWriteToken } from '@/lib/blob-token';
 
 const ALLOWED_TYPES = [
   'image/jpeg',
@@ -16,9 +17,11 @@ const ALLOWED_TYPES = [
 const MAX_BYTES = 200 * 1024 * 1024;
 
 export async function POST(request: NextRequest) {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+  const rw = getBlobReadWriteToken();
+  if (!rw) {
     return NextResponse.json({ error: 'Blob storage not configured' }, { status: 503 });
   }
+  process.env.BLOB_READ_WRITE_TOKEN = rw;
 
   try {
     const body = (await request.json()) as HandleUploadBody;
