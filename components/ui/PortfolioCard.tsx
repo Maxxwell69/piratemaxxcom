@@ -22,6 +22,7 @@ export function PortfolioCard({ item }: PortfolioCardProps) {
             fill
             className="object-cover"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            unoptimized
           />
         ) : (
           <div className="flex h-full min-h-[10rem] items-center justify-center px-4 text-center text-gray-500 text-sm">
@@ -73,14 +74,28 @@ export function PortfolioCard({ item }: PortfolioCardProps) {
           </div>
         )}
 
-        {item.link && (
+        <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2">
           <Link
-            href={item.link}
-            className="mt-4 inline-block text-sm font-medium text-pirate-gold hover:underline"
+            href={`/portfolio/${encodeURIComponent(item.id)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block text-sm font-medium text-pirate-gold hover:underline"
           >
             View project →
           </Link>
-        )}
+          {item.link &&
+            item.link !== '#' &&
+            /^https?:\/\//i.test(item.link.trim()) && (
+              <a
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block text-sm font-medium text-gray-400 hover:text-pirate-gold hover:underline"
+              >
+                Live site →
+              </a>
+            )}
+        </div>
       </div>
     </article>
   );
