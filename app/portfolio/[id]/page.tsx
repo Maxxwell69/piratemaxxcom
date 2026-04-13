@@ -8,6 +8,7 @@ import { getUserPortfolioItems } from '@/lib/portfolio-storage';
 import { isAdminAuthenticated } from '@/lib/admin-session';
 import { getYouTubeId, isDirectVideoFileUrl } from '@/lib/portfolio-video';
 import { PortfolioCoverImage } from '@/components/portfolio/PortfolioCoverImage';
+import { getPortfolioCoverSrc, isFaviconCoverFallback } from '@/lib/portfolio-cover-src';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,6 +50,8 @@ export default async function PortfolioItemPage({ params }: PageProps) {
   const ytId = item.videoUrl ? getYouTubeId(item.videoUrl) : null;
   const directVideo = item.videoUrl && !ytId && isDirectVideoFileUrl(item.videoUrl);
   const showLiveLink = item.link && item.link !== '#' && isExternalProjectLink(item.link);
+  const coverSrc = getPortfolioCoverSrc(item);
+  const faviconOnlyCover = isFaviconCoverFallback(item);
 
   return (
     <div className="bg-pirate-black pb-16 pt-8">
@@ -103,18 +106,33 @@ export default async function PortfolioItemPage({ params }: PageProps) {
           </div>
         </header>
 
-        {item.imageUrl && (
-          <div className="relative mt-10 aspect-video w-full max-w-4xl overflow-hidden rounded-lg border border-pirate-steel bg-pirate-steel">
-            <PortfolioCoverImage
-              src={item.imageUrl}
-              alt={item.title}
-              className="absolute inset-0 h-full w-full object-contain sm:object-cover"
-              priority
-            />
+        {coverSrc && (
+          <div className="mt-10 max-w-4xl">
+            <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-pirate-steel bg-pirate-steel">
+              <PortfolioCoverImage
+                src={coverSrc}
+                alt={item.title}
+                className={
+                  faviconOnlyCover
+                    ? 'absolute inset-0 m-auto h-24 w-24 max-h-[40%] max-w-[40%] object-contain sm:h-32 sm:w-32'
+                    : 'absolute inset-0 h-full w-full object-contain sm:object-cover'
+                }
+                priority
+              />
+            </div>
+            {faviconOnlyCover && (
+              <p className="mt-3 text-sm text-gray-500">
+                Showing the live site icon only. In{' '}
+                <Link href="/admin/portfolio" className="text-pirate-gold hover:underline">
+                  admin
+                </Link>
+                , upload a screenshot or paste a direct image URL (for example .png or .jpg) for a full cover.
+              </p>
+            )}
           </div>
         )}
 
-        {!item.imageUrl && item.imagePlaceholder && (
+        {!coverSrc && item.imagePlaceholder && (
           <p className="mt-10 text-sm text-gray-500">{item.imagePlaceholder}</p>
         )}
 

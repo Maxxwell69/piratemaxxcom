@@ -188,15 +188,16 @@ export default function AdminPortfolioPage() {
     setMessage('');
     setSaving(true);
     const wasEdit = Boolean(editingId);
+    // Always send string fields so JSON never drops keys (undefined strips and could wipe media on save).
     const payload = {
-      title,
+      title: title.trim(),
       category,
-      description,
-      link: link || undefined,
-      imagePlaceholder: imagePlaceholder || undefined,
-      imageUrl: imageUrl || undefined,
-      videoUrl: videoUrl || undefined,
-      tags,
+      description: description.trim(),
+      link: link.trim(),
+      imagePlaceholder: imagePlaceholder.trim(),
+      imageUrl: imageUrl.trim(),
+      videoUrl: videoUrl.trim(),
+      tags: tags.trim(),
     };
     try {
       const res = await fetch('/api/admin/portfolio', {
@@ -323,6 +324,11 @@ export default function AdminPortfolioPage() {
 
                 <div className="rounded-md border border-pirate-steel/60 bg-pirate-black/50 p-4 space-y-3">
                   <p className="text-sm font-medium text-white">Cover image</p>
+                  <p className="text-xs text-gray-500">
+                    Use <strong className="text-gray-400">Upload</strong> or a <strong className="text-gray-400">direct image URL</strong>{' '}
+                    (.png / .jpg / .webp). Your <strong className="text-gray-400">project link</strong> is the live site, not an image — the
+                    portfolio will show a small site icon until you add a real cover here.
+                  </p>
                   <div className="flex flex-wrap items-center gap-3">
                     <label className="cursor-pointer rounded-md border border-pirate-gold/50 px-4 py-2 text-sm text-pirate-gold hover:bg-pirate-gold/10">
                       {uploadingImage ? 'Uploading…' : 'Upload image / screenshot'}

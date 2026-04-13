@@ -57,7 +57,12 @@ function parsePortfolioBody(body: unknown):
       : b.imageUrl != null
         ? String(b.imageUrl).trim()
         : '';
-  const videoUrl = typeof b.videoUrl === 'string' ? b.videoUrl.trim() : '';
+  const videoUrl =
+    typeof b.videoUrl === 'string'
+      ? b.videoUrl.trim()
+      : b.videoUrl != null
+        ? String(b.videoUrl).trim()
+        : '';
   const tagsRaw = typeof b.tags === 'string' ? b.tags : '';
 
   if (!title || !description) {
@@ -86,6 +91,31 @@ function parsePortfolioBody(body: unknown):
       videoUrl,
       tags: tagList?.length ? tagList : undefined,
     },
+  };
+}
+
+/** When JSON omits keys (undefined stripped), preserve existing media fields on PUT. */
+function mergePutOptionalStrings(
+  body: Record<string, unknown>,
+  parsed: ParsedPortfolioFields,
+  existing: PortfolioItem
+): ParsedPortfolioFields {
+  const str = (v: string | undefined) => (typeof v === 'string' ? v.trim() : '');
+  return {
+    ...parsed,
+    link: Object.prototype.hasOwnProperty.call(body, 'link') ? parsed.link : str(existing.link),
+    imagePlaceholder: Object.prototype.hasOwnProperty.call(body, 'imagePlaceholder')
+      ? parsed.imagePlaceholder
+      : str(existing.imagePlaceholder),
+    imageUrl: Object.prototype.hasOwnProperty.call(body, 'imageUrl')
+      ? parsed.imageUrl
+      : str(existing.imageUrl),
+    videoUrl: Object.prototype.hasOwnProperty.call(body, 'videoUrl')
+      ? parsed.videoUrl
+      : str(existing.videoUrl),
+    tags: Object.prototype.hasOwnProperty.call(body, 'tags')
+      ? parsed.tags
+      : existing.tags,
   };
 }
 
@@ -200,7 +230,9 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: parsed.error }, { status: parsed.status });
     }
 
-    const item = buildPortfolioItem(id, parsed.data);
+    const existing = userItems.find((i) => i.id === id)!;
+    const merged = mergePutOptionalStrings(body as Record<string, unknown>, parsed.data, existing);
+    const item = buildPortfolioItem(id, merged);
     const updated = await updateUserPortfolioItem(id, item);
     if (!updated) {
       return NextResponse.json({ error: 'Update failed' }, { status: 500 });

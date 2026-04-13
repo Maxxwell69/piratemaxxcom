@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { PortfolioItem } from '@/data/portfolio';
 import { PortfolioCoverImage } from '@/components/portfolio/PortfolioCoverImage';
 import { Badge } from './Badge';
+import { getPortfolioCoverSrc } from '@/lib/portfolio-cover-src';
 import { getYouTubeId, isDirectVideoFileUrl } from '@/lib/portfolio-video';
 
 interface PortfolioCardProps {
@@ -13,13 +14,14 @@ interface PortfolioCardProps {
 export function PortfolioCard({ item, editHref }: PortfolioCardProps) {
   const ytId = item.videoUrl ? getYouTubeId(item.videoUrl) : null;
   const directVideo = item.videoUrl && !ytId && isDirectVideoFileUrl(item.videoUrl);
+  const coverSrc = getPortfolioCoverSrc(item);
 
   return (
     <article className="group overflow-hidden rounded-lg border border-pirate-steel bg-pirate-charcoal transition hover:border-pirate-gold/40">
       <div className="relative aspect-video bg-pirate-steel">
-        {item.imageUrl ? (
+        {coverSrc ? (
           <PortfolioCoverImage
-            src={item.imageUrl}
+            src={coverSrc}
             alt={item.title}
             className="absolute inset-0 h-full w-full object-cover"
           />
