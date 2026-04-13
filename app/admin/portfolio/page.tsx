@@ -329,6 +329,11 @@ export default function AdminPortfolioPage() {
                     (.png / .jpg / .webp). Your <strong className="text-gray-400">project link</strong> is the live site, not an image — the
                     portfolio will show a small site icon until you add a real cover here.
                   </p>
+                  <p className="text-xs text-gray-500">
+                    Files in <code className="text-xs text-gray-400">public/images/</code> ship with your repo: after you{' '}
+                    <strong className="text-gray-400">push to main</strong>, Vercel deploys them — use paths like{' '}
+                    <code className="text-xs text-gray-400">/images/portfolio/…</code> on production the same way (not localhost-only).
+                  </p>
                   <div className="flex flex-wrap items-center gap-3">
                     <label className="cursor-pointer rounded-md border border-pirate-gold/50 px-4 py-2 text-sm text-pirate-gold hover:bg-pirate-gold/10">
                       {uploadingImage ? 'Uploading…' : 'Upload image / screenshot'}
