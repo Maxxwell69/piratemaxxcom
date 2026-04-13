@@ -53,17 +53,27 @@ export function portfolioStorageConfigured(): boolean {
   return Boolean(redis()) || process.env.NODE_ENV === 'development';
 }
 
-export async function getUserPortfolioItems(): Promise<PortfolioItem[]> {
-  const r = redis();
-  if (r) {
-    const data = await r.get<string>(REDIS_KEY);
-    if (!data) return [];
+function parseStoredPortfolioItems(data: unknown): PortfolioItem[] {
+  if (!data) return [];
+  if (Array.isArray(data)) {
+    return data as PortfolioItem[];
+  }
+  if (typeof data === 'string') {
     try {
       const parsed = JSON.parse(data) as unknown;
       return Array.isArray(parsed) ? (parsed as PortfolioItem[]) : [];
     } catch {
       return [];
     }
+  }
+  return [];
+}
+
+export async function getUserPortfolioItems(): Promise<PortfolioItem[]> {
+  const r = redis();
+  if (r) {
+    const data = await r.get(REDIS_KEY);
+    return parseStoredPortfolioItems(data);
   }
   return readFromFile();
 }

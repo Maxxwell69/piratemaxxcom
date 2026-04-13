@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { verifyAdminSessionToken, ADMIN_SESSION_COOKIE_NAME } from '@/lib/admin-auth';
 import {
@@ -90,6 +91,8 @@ export async function POST(request: NextRequest) {
     };
 
     await appendUserPortfolioItem(item);
+    revalidatePath('/');
+    revalidatePath('/portfolio');
     return NextResponse.json({ success: true, item });
   } catch (e) {
     console.error(e);
@@ -110,5 +113,7 @@ export async function DELETE(request: NextRequest) {
   if (!removed) {
     return NextResponse.json({ error: 'Item not found' }, { status: 404 });
   }
+  revalidatePath('/');
+  revalidatePath('/portfolio');
   return NextResponse.json({ success: true });
 }
