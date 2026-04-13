@@ -51,7 +51,12 @@ function parsePortfolioBody(body: unknown):
   const link = typeof b.link === 'string' ? b.link.trim() : '';
   const imagePlaceholder =
     typeof b.imagePlaceholder === 'string' ? b.imagePlaceholder.trim() : '';
-  const imageUrl = typeof b.imageUrl === 'string' ? b.imageUrl.trim() : '';
+  const imageUrl =
+    typeof b.imageUrl === 'string'
+      ? b.imageUrl.trim()
+      : b.imageUrl != null
+        ? String(b.imageUrl).trim()
+        : '';
   const videoUrl = typeof b.videoUrl === 'string' ? b.videoUrl.trim() : '';
   const tagsRaw = typeof b.tags === 'string' ? b.tags : '';
 

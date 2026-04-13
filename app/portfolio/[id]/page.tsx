@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { buildMetadata } from '@/lib/metadata';
 import { Container } from '@/components/layout/Container';
 import { Badge } from '@/components/ui/Badge';
@@ -8,6 +7,7 @@ import { getMergedPortfolioItems } from '@/lib/portfolio-data';
 import { getUserPortfolioItems } from '@/lib/portfolio-storage';
 import { isAdminAuthenticated } from '@/lib/admin-session';
 import { getYouTubeId, isDirectVideoFileUrl } from '@/lib/portfolio-video';
+import { PortfolioCoverImage } from '@/components/portfolio/PortfolioCoverImage';
 
 export const dynamic = 'force-dynamic';
 
@@ -105,13 +105,10 @@ export default async function PortfolioItemPage({ params }: PageProps) {
 
         {item.imageUrl && (
           <div className="relative mt-10 aspect-video w-full max-w-4xl overflow-hidden rounded-lg border border-pirate-steel bg-pirate-steel">
-            <Image
+            <PortfolioCoverImage
               src={item.imageUrl}
               alt={item.title}
-              fill
-              className="object-contain sm:object-cover"
-              sizes="(max-width: 896px) 100vw, 896px"
-              unoptimized
+              className="absolute inset-0 h-full w-full object-contain sm:object-cover"
               priority
             />
           </div>

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { PortfolioCoverImage } from '@/components/portfolio/PortfolioCoverImage';
 import { useRouter } from 'next/navigation';
 import { upload } from '@vercel/blob/client';
 import type { PortfolioItem, PortfolioCategory } from '@/data/portfolio';
@@ -346,7 +346,11 @@ export default function AdminPortfolioPage() {
                   />
                   {imageUrl && (
                     <div className="relative mt-2 aspect-video w-full max-w-md overflow-hidden rounded-md border border-pirate-steel">
-                      <Image src={imageUrl} alt="Preview" fill className="object-cover" unoptimized />
+                      <PortfolioCoverImage
+                        src={imageUrl}
+                        alt="Preview"
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
                     </div>
                   )}
                 </div>
@@ -439,12 +443,10 @@ export default function AdminPortfolioPage() {
                     <div className="flex min-w-0 flex-1 items-center gap-3">
                       {item.imageUrl && (
                         <div className="relative h-12 w-20 shrink-0 overflow-hidden rounded border border-pirate-steel">
-                          <Image
+                          <PortfolioCoverImage
                             src={item.imageUrl}
                             alt=""
-                            fill
-                            className="object-cover"
-                            unoptimized
+                            className="absolute inset-0 h-full w-full object-cover"
                           />
                         </div>
                       )}

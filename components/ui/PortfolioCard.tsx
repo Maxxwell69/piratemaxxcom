@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import type { PortfolioItem } from '@/data/portfolio';
+import { PortfolioCoverImage } from '@/components/portfolio/PortfolioCoverImage';
 import { Badge } from './Badge';
 import { getYouTubeId, isDirectVideoFileUrl } from '@/lib/portfolio-video';
 
@@ -18,13 +18,10 @@ export function PortfolioCard({ item, editHref }: PortfolioCardProps) {
     <article className="group overflow-hidden rounded-lg border border-pirate-steel bg-pirate-charcoal transition hover:border-pirate-gold/40">
       <div className="relative aspect-video bg-pirate-steel">
         {item.imageUrl ? (
-          <Image
+          <PortfolioCoverImage
             src={item.imageUrl}
             alt={item.title}
-            fill
-            className="object-cover"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            unoptimized
+            className="absolute inset-0 h-full w-full object-cover"
           />
         ) : (
           <div className="flex h-full min-h-[10rem] items-center justify-center px-4 text-center text-gray-500 text-sm">
