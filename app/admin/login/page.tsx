@@ -25,7 +25,7 @@ export default function AdminLoginPage() {
         setError(typeof data.error === 'string' ? data.error : 'Login failed');
         return;
       }
-      router.push('/admin/portfolio');
+      router.push('/admin');
       router.refresh();
     } catch {
       setError('Network error');

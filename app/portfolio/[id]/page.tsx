@@ -5,6 +5,8 @@ import { buildMetadata } from '@/lib/metadata';
 import { Container } from '@/components/layout/Container';
 import { Badge } from '@/components/ui/Badge';
 import { getMergedPortfolioItems } from '@/lib/portfolio-data';
+import { getUserPortfolioItems } from '@/lib/portfolio-storage';
+import { isAdminAuthenticated } from '@/lib/admin-session';
 import { getYouTubeId, isDirectVideoFileUrl } from '@/lib/portfolio-video';
 
 export const dynamic = 'force-dynamic';
@@ -37,6 +39,13 @@ export default async function PortfolioItemPage({ params }: PageProps) {
   const item = items.find((i) => i.id === params.id);
   if (!item) notFound();
 
+  const isAdmin = await isAdminAuthenticated();
+  const userIds = isAdmin ? (await getUserPortfolioItems()).map((u) => u.id) : [];
+  const canEditInAdmin = userIds.includes(item.id);
+  const adminEditHref = canEditInAdmin
+    ? `/admin/portfolio?edit=${encodeURIComponent(item.id)}`
+    : null;
+
   const ytId = item.videoUrl ? getYouTubeId(item.videoUrl) : null;
   const directVideo = item.videoUrl && !ytId && isDirectVideoFileUrl(item.videoUrl);
   const showLiveLink = item.link && item.link !== '#' && isExternalProjectLink(item.link);
@@ -50,6 +59,26 @@ export default async function PortfolioItemPage({ params }: PageProps) {
         >
           ← Back to portfolio
         </Link>
+
+        {isAdmin && (
+          <div className="mt-4 rounded-lg border border-pirate-gold/30 bg-pirate-charcoal/60 px-4 py-3 text-sm text-gray-300">
+            <span className="font-semibold text-pirate-gold">Admin</span>
+            {adminEditHref ? (
+              <>
+                <span className="text-gray-500"> · </span>
+                <Link href={adminEditHref} className="text-amber-400 hover:text-amber-300 hover:underline">
+                  Edit this project
+                </Link>
+              </>
+            ) : (
+              <>
+                <span className="text-gray-500"> · </span>
+                Built-in projects are edited in{' '}
+                <code className="rounded bg-pirate-black px-1 text-xs text-gray-400">data/portfolio.ts</code>.
+              </>
+            )}
+          </div>
+        )}
 
         <header className="mt-8">
           <div className="flex flex-wrap gap-2">

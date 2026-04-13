@@ -6,9 +6,11 @@ import { getYouTubeId, isDirectVideoFileUrl } from '@/lib/portfolio-video';
 
 interface PortfolioCardProps {
   item: PortfolioItem;
+  /** When set (admin on public portfolio), link opens admin editor for this item. */
+  editHref?: string;
 }
 
-export function PortfolioCard({ item }: PortfolioCardProps) {
+export function PortfolioCard({ item, editHref }: PortfolioCardProps) {
   const ytId = item.videoUrl ? getYouTubeId(item.videoUrl) : null;
   const directVideo = item.videoUrl && !ytId && isDirectVideoFileUrl(item.videoUrl);
 
@@ -75,6 +77,14 @@ export function PortfolioCard({ item }: PortfolioCardProps) {
         )}
 
         <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2">
+          {editHref && (
+            <Link
+              href={editHref}
+              className="inline-block text-sm font-medium text-amber-400 hover:text-amber-300 hover:underline"
+            >
+              Edit
+            </Link>
+          )}
           <Link
             href={`/portfolio/${encodeURIComponent(item.id)}`}
             target="_blank"

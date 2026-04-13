@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { PortfolioCard } from '@/components/ui/PortfolioCard';
 import {
   portfolioCategories,
@@ -10,9 +11,11 @@ import {
 
 interface PortfolioGalleryProps {
   items: PortfolioItem[];
+  /** When the viewer is an admin: ids of items stored in admin storage (editable on-site). */
+  editableIds?: string[];
 }
 
-export function PortfolioGallery({ items }: PortfolioGalleryProps) {
+export function PortfolioGallery({ items, editableIds }: PortfolioGalleryProps) {
   const [filter, setFilter] = useState<PortfolioCategory | 'all'>('all');
 
   const filtered = useMemo(() => {
@@ -20,8 +23,23 @@ export function PortfolioGallery({ items }: PortfolioGalleryProps) {
     return items.filter((item) => item.category === filter);
   }, [filter, items]);
 
+  const isAdmin = editableIds !== undefined;
+
   return (
     <>
+      {isAdmin && (
+        <div className="mb-6 rounded-lg border border-pirate-gold/30 bg-pirate-black/40 px-4 py-3 text-sm text-gray-300">
+          <span className="font-semibold text-pirate-gold">Admin</span>
+          <span className="text-gray-500"> · </span>
+          Cards you added from the dashboard show an <strong className="text-white">Edit</strong> link.
+          Built-in projects are edited in{' '}
+          <code className="rounded bg-pirate-charcoal px-1 text-xs text-gray-400">data/portfolio.ts</code>{' '}
+          in the repo.
+          <Link href="/admin/portfolio" className="ml-2 text-pirate-gold hover:underline">
+            Portfolio admin →
+          </Link>
+        </div>
+      )}
       <div className="mb-8 flex flex-wrap gap-2">
         <button
           type="button"
@@ -51,7 +69,15 @@ export function PortfolioGallery({ items }: PortfolioGalleryProps) {
       </div>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((item) => (
-          <PortfolioCard key={item.id} item={item} />
+          <PortfolioCard
+            key={item.id}
+            item={item}
+            editHref={
+              editableIds?.includes(item.id)
+                ? `/admin/portfolio?edit=${encodeURIComponent(item.id)}`
+                : undefined
+            }
+          />
         ))}
       </div>
     </>

@@ -100,3 +100,13 @@ export async function removeUserPortfolioItem(id: string): Promise<boolean> {
   await setUserPortfolioItems(next);
   return true;
 }
+
+/** Replace an existing user-saved item by id. Returns false if not found. */
+export async function updateUserPortfolioItem(id: string, nextItem: PortfolioItem): Promise<boolean> {
+  const items = await getUserPortfolioItems();
+  const idx = items.findIndex((i) => i.id === id);
+  if (idx === -1) return false;
+  items[idx] = nextItem;
+  await setUserPortfolioItems(items);
+  return true;
+}

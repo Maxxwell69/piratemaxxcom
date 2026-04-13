@@ -1,12 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { upload } from '@vercel/blob/client';
 import type { PortfolioItem, PortfolioCategory } from '@/data/portfolio';
 import { portfolioCategories } from '@/data/portfolio';
+import { AdminNav } from '@/components/admin/AdminNav';
 
 function safeFilename(name: string) {
   const base = name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
@@ -42,6 +43,8 @@ export default function AdminPortfolioPage() {
 
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const editQueryHandled = useRef(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -65,6 +68,37 @@ export default function AdminPortfolioPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  /** Open editor when arriving from public portfolio (?edit=id). */
+  useEffect(() => {
+    if (loading || editQueryHandled.current) return;
+    editQueryHandled.current = true;
+    if (typeof window === 'undefined') return;
+    const id = new URLSearchParams(window.location.search).get('edit');
+    if (!id) return;
+    const item = userItems.find((i) => i.id === id);
+    if (item) {
+      setEditingId(item.id);
+      setTitle(item.title);
+      setCategory(item.category);
+      setDescription(item.description);
+      setLink(item.link ?? '');
+      setImagePlaceholder(item.imagePlaceholder ?? '');
+      setImageUrl(item.imageUrl ?? '');
+      setVideoUrl(item.videoUrl ?? '');
+      setTags(item.tags?.join(', ') ?? '');
+      setMessage('');
+      window.history.replaceState(null, '', '/admin/portfolio');
+      window.requestAnimationFrame(() => {
+        document.getElementById('admin-portfolio-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    } else {
+      setMessage(
+        'That entry is not in your admin-added list. Built-in portfolio rows are edited in data/portfolio.ts in the repo.'
+      );
+      window.history.replaceState(null, '', '/admin/portfolio');
+    }
+  }, [loading, userItems]);
 
   async function handleLogout() {
     await fetch('/api/admin/logout', { method: 'POST' });
@@ -114,38 +148,69 @@ export default function AdminPortfolioPage() {
     }
   }
 
-  async function handleAdd(e: React.FormEvent) {
+  function resetForm() {
+    setEditingId(null);
+    setTitle('');
+    setCategory('websites');
+    setDescription('');
+    setLink('');
+    setImagePlaceholder('');
+    setImageUrl('');
+    setVideoUrl('');
+    setTags('');
+  }
+
+  function startEdit(item: PortfolioItem) {
+    setEditingId(item.id);
+    setTitle(item.title);
+    setCategory(item.category);
+    setDescription(item.description);
+    setLink(item.link ?? '');
+    setImagePlaceholder(item.imagePlaceholder ?? '');
+    setImageUrl(item.imageUrl ?? '');
+    setVideoUrl(item.videoUrl ?? '');
+    setTags(item.tags?.join(', ') ?? '');
+    setMessage('');
+    if (typeof window !== 'undefined') {
+      window.requestAnimationFrame(() => {
+        document.getElementById('admin-portfolio-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  }
+
+  function cancelEdit() {
+    resetForm();
+    setMessage('Edit cancelled.');
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMessage('');
     setSaving(true);
+    const wasEdit = Boolean(editingId);
+    const payload = {
+      title,
+      category,
+      description,
+      link: link || undefined,
+      imagePlaceholder: imagePlaceholder || undefined,
+      imageUrl: imageUrl || undefined,
+      videoUrl: videoUrl || undefined,
+      tags,
+    };
     try {
       const res = await fetch('/api/admin/portfolio', {
-        method: 'POST',
+        method: wasEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          category,
-          description,
-          link: link || undefined,
-          imagePlaceholder: imagePlaceholder || undefined,
-          imageUrl: imageUrl || undefined,
-          videoUrl: videoUrl || undefined,
-          tags,
-        }),
+        body: JSON.stringify(wasEdit && editingId ? { id: editingId, ...payload } : payload),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setMessage(typeof data.error === 'string' ? data.error : 'Save failed');
         return;
       }
-      setTitle('');
-      setDescription('');
-      setLink('');
-      setImagePlaceholder('');
-      setImageUrl('');
-      setVideoUrl('');
-      setTags('');
-      setMessage('Added to portfolio.');
+      resetForm();
+      setMessage(wasEdit ? 'Changes saved.' : 'Added to portfolio.');
       await load();
     } catch {
       setMessage('Network error');
@@ -160,6 +225,7 @@ export default function AdminPortfolioPage() {
       method: 'DELETE',
     });
     if (res.ok) {
+      if (editingId === id) resetForm();
       setMessage('Removed.');
       await load();
     } else {
@@ -170,6 +236,7 @@ export default function AdminPortfolioPage() {
   return (
     <div className="min-h-screen bg-pirate-black px-4 py-10">
       <div className="mx-auto max-w-2xl">
+        <AdminNav />
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="font-display text-2xl font-bold text-white">Portfolio admin</h1>
           <div className="flex gap-3">
@@ -208,13 +275,18 @@ export default function AdminPortfolioPage() {
           <p className="mt-8 text-gray-400">Loading…</p>
         ) : (
           <>
-            <section className="mt-8 rounded-lg border border-pirate-steel bg-pirate-charcoal p-6">
-              <h2 className="font-semibold text-white">Add project</h2>
+            <section
+              id="admin-portfolio-form"
+              className="mt-8 scroll-mt-8 rounded-lg border border-pirate-steel bg-pirate-charcoal p-6"
+            >
+              <h2 className="font-semibold text-white">
+                {editingId ? 'Edit project' : 'Add project'}
+              </h2>
               <p className="mt-1 text-sm text-gray-400">
                 Seed projects stay in <code className="text-xs text-gray-500">data/portfolio.ts</code>.
-                Upload screenshots or videos from your computer, or paste URLs.
+                Items you add here can be edited anytime. Upload screenshots or videos, or paste URLs.
               </p>
-              <form onSubmit={handleAdd} className="mt-4 space-y-4">
+              <form onSubmit={handleSubmit} className="mt-4 space-y-4">
                 <div>
                   <label className="block text-sm text-gray-300">Title</label>
                   <input
@@ -334,13 +406,24 @@ export default function AdminPortfolioPage() {
                   />
                 </div>
                 {message && <p className="text-sm text-pirate-gold">{message}</p>}
-                <button
-                  type="submit"
-                  disabled={saving || !storageReady}
-                  className="rounded-md bg-pirate-crimson px-6 py-2 font-medium text-white hover:bg-pirate-red disabled:opacity-50"
-                >
-                  {saving ? 'Saving…' : 'Add to portfolio'}
-                </button>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="submit"
+                    disabled={saving || !storageReady}
+                    className="rounded-md bg-pirate-crimson px-6 py-2 font-medium text-white hover:bg-pirate-red disabled:opacity-50"
+                  >
+                    {saving ? 'Saving…' : editingId ? 'Save changes' : 'Add to portfolio'}
+                  </button>
+                  {editingId && (
+                    <button
+                      type="button"
+                      onClick={cancelEdit}
+                      className="rounded-md border border-pirate-steel px-6 py-2 text-sm text-gray-300 hover:bg-pirate-black/50"
+                    >
+                      Cancel edit
+                    </button>
+                  )}
+                </div>
               </form>
             </section>
 
@@ -373,13 +456,22 @@ export default function AdminPortfolioPage() {
                         )}
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(item.id)}
-                      className="text-sm text-red-400 hover:text-red-300"
-                    >
-                      Remove
-                    </button>
+                    <div className="flex shrink-0 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => startEdit(item)}
+                        className="text-sm text-pirate-gold hover:text-amber-200"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(item.id)}
+                        className="text-sm text-red-400 hover:text-red-300"
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </li>
                 ))}
                 {userItems.length === 0 && (
