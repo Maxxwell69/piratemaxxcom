@@ -9,6 +9,9 @@ export function AdminNav() {
       <Link href="/admin/portfolio" className="text-gray-400 hover:text-pirate-gold">
         Portfolio
       </Link>
+      <Link href="/admin/community" className="text-gray-400 hover:text-pirate-gold">
+        Community roles
+      </Link>
     </nav>
   );
 }

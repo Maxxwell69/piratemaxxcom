@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { mainNav } from '@/data/navigation';
 import { Container } from './Container';
 import { LiveBadge } from '@/components/ui/LiveBadge';
+import { CommunityNavAuth } from '@/components/layout/CommunityNavAuth';
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
@@ -42,6 +43,9 @@ export function Navbar() {
                 </li>
               )
             )}
+            <li className="border-l border-pirate-steel pl-6">
+              <CommunityNavAuth />
+            </li>
           </ul>
 
           {/* Mobile menu button */}
@@ -81,6 +85,14 @@ export function Navbar() {
                   </Link>
                 </li>
               ))}
+              <li className="border-t border-pirate-steel pt-3">
+                <div className="px-3 py-2 text-gray-400">
+                  <span className="text-xs uppercase tracking-wide text-gray-500">Community</span>
+                  <div className="mt-2 flex flex-col gap-2">
+                    <CommunityNavAuth />
+                  </div>
+                </div>
+              </li>
             </ul>
           </div>
         )}

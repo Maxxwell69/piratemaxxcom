@@ -40,3 +40,6 @@ next-env.d.ts
 
 # Admin-added portfolio (local dev file fallback)
 data/portfolio-user.json
+
+# Community members (local dev file fallback)
+data/community-members.json

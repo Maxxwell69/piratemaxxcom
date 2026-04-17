@@ -1,9 +1,26 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
+import { verifyMemberSessionToken, MEMBER_SESSION_COOKIE_NAME } from '@/lib/member-auth';
+import { ADMIN_SESSION_COOKIE_NAME } from '@/lib/admin-auth';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (pathname.startsWith('/community/mod')) {
+    const token = request.cookies.get(MEMBER_SESSION_COOKIE_NAME)?.value;
+    if (!token) {
+      const login = new URL('/community/login', request.url);
+      login.searchParams.set('next', pathname);
+      return NextResponse.redirect(login);
+    }
+    const session = await verifyMemberSessionToken(token);
+    if (!session || session.permission !== 'mod') {
+      return NextResponse.redirect(new URL('/community/profile', request.url));
+    }
+    return NextResponse.next();
+  }
+
   if (!pathname.startsWith('/admin')) {
     return NextResponse.next();
   }
@@ -16,7 +33,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/admin/login', request.url));
   }
 
-  const token = request.cookies.get('admin_session')?.value;
+  const token = request.cookies.get(ADMIN_SESSION_COOKIE_NAME)?.value;
   if (!token) {
     return NextResponse.redirect(new URL('/admin/login', request.url));
   }
@@ -30,5 +47,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin', '/admin/:path*'],
+  matcher: ['/admin/:path*', '/community/mod', '/community/mod/:path*'],
 };
