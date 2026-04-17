@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
       passwordHash,
       permission: 'fan',
       createdAt,
+      socials: {},
     });
 
     const token = await createMemberSessionToken({

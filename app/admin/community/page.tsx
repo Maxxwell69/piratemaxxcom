@@ -33,7 +33,9 @@ export default function AdminCommunityPage() {
         setError(typeof data.error === 'string' ? data.error : 'Update failed');
         return;
       }
-      setMessage(`Updated ${email} → ${permission}. Tell them to use “Sync permissions” on their profile if mod tools should unlock immediately.`);
+      setMessage(
+        `Updated ${email} → ${permission}. Their next page navigation or refresh updates the session automatically.`
+      );
     } catch {
       setError('Network error');
     } finally {

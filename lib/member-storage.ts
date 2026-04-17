@@ -2,6 +2,8 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { Redis } from '@upstash/redis';
 import type { CommunityPermission } from '@/lib/community-permission';
+import type { MemberSocials } from '@/lib/member-socials';
+import { sanitizeSocials } from '@/lib/member-socials';
 
 const REDIS_KEY = 'community:members_v1';
 const USER_FILE = path.join(process.cwd(), 'data', 'community-members.json');
@@ -14,6 +16,25 @@ export interface CommunityMemberRecord {
   passwordHash: string;
   permission: CommunityPermission;
   createdAt: string;
+  /** Profile image URL (https recommended). */
+  avatarUrl?: string;
+  /** Short fan / crew blurb. */
+  bio?: string;
+  socials?: MemberSocials;
+}
+
+export type CommunityMemberPublic = Omit<CommunityMemberRecord, 'passwordHash'>;
+
+export function toPublicMember(m: CommunityMemberRecord): CommunityMemberPublic {
+  const { passwordHash: _, ...rest } = m;
+  return rest;
+}
+
+function normalizeMember(m: CommunityMemberRecord): CommunityMemberRecord {
+  return {
+    ...m,
+    socials: m.socials && typeof m.socials === 'object' ? sanitizeSocials(m.socials) : {},
+  };
 }
 
 interface MemberStore {
@@ -105,12 +126,14 @@ export async function setMemberStore(store: MemberStore): Promise<void> {
 export async function findMemberByEmail(email: string): Promise<CommunityMemberRecord | null> {
   const normalized = email.trim().toLowerCase();
   const { members } = await getMemberStore();
-  return members.find((m) => m.email === normalized) ?? null;
+  const m = members.find((x) => x.email === normalized) ?? null;
+  return m ? normalizeMember(m) : null;
 }
 
 export async function findMemberById(id: string): Promise<CommunityMemberRecord | null> {
   const { members } = await getMemberStore();
-  return members.find((m) => m.id === id) ?? null;
+  const m = members.find((x) => x.id === id) ?? null;
+  return m ? normalizeMember(m) : null;
 }
 
 export async function addMember(record: CommunityMemberRecord): Promise<void> {
@@ -131,6 +154,46 @@ export async function updateMemberPermission(
   const idx = store.members.findIndex((m) => m.email === normalized);
   if (idx === -1) return false;
   store.members[idx] = { ...store.members[idx], permission };
+  await setMemberStore(store);
+  return true;
+}
+
+export interface MemberProfileUpdates {
+  displayName?: string;
+  avatarUrl?: string | null;
+  bio?: string | null;
+  socials?: MemberSocials;
+}
+
+export async function updateMemberProfile(id: string, updates: MemberProfileUpdates): Promise<boolean> {
+  const store = await getMemberStore();
+  const idx = store.members.findIndex((m) => m.id === id);
+  if (idx === -1) return false;
+  const cur = store.members[idx];
+  const next: CommunityMemberRecord = { ...cur };
+
+  if (updates.displayName !== undefined) {
+    next.displayName = updates.displayName.trim();
+  }
+  if (updates.avatarUrl !== undefined) {
+    if (updates.avatarUrl === null || updates.avatarUrl === '') {
+      delete next.avatarUrl;
+    } else {
+      next.avatarUrl = updates.avatarUrl.trim();
+    }
+  }
+  if (updates.bio !== undefined) {
+    if (updates.bio === null || updates.bio === '') {
+      delete next.bio;
+    } else {
+      next.bio = updates.bio.trim();
+    }
+  }
+  if (updates.socials !== undefined) {
+    next.socials = sanitizeSocials(updates.socials);
+  }
+
+  store.members[idx] = next;
   await setMemberStore(store);
   return true;
 }

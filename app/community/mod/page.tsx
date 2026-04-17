@@ -8,11 +8,12 @@ export default async function CommunityModPage() {
       <div className="min-h-[50vh] bg-pirate-black px-4 py-12 text-center text-gray-400">
         <p>Mod access requires the mod role on your session.</p>
         <p className="mt-2 text-sm">
-          Open your{' '}
+          After an admin assigns mod, go to another page or refresh — your session updates automatically. You can also
+          open your{' '}
           <Link href="/community/profile" className="text-pirate-gold hover:underline">
             profile
           </Link>{' '}
-          and use <strong className="text-gray-300">Sync permissions</strong> after an admin assigns mod.
+          and try again.
         </p>
       </div>
     );
