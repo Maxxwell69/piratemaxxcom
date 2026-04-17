@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifyAdminSessionToken, ADMIN_SESSION_COOKIE_NAME } from '@/lib/admin-auth';
 import { parseCommunityPermission } from '@/lib/community-permission';
-import { updateMemberPermission } from '@/lib/member-storage';
+import { updateMemberPermission, updateMemberPermissionById } from '@/lib/member-storage';
 
 async function isAdmin(): Promise<boolean> {
   const token = cookies().get(ADMIN_SESSION_COOKIE_NAME)?.value;
@@ -17,11 +17,28 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
     const permission = parseCommunityPermission(body.permission);
-    if (!email || !permission) {
+    if (!permission) {
       return NextResponse.json(
-        { error: 'Provide email and permission: fan, super_fan, or mod.' },
+        { error: 'Provide permission: fan, super_fan, or mod.' },
+        { status: 400 }
+      );
+    }
+
+    const id = typeof body.id === 'string' ? body.id.trim() : '';
+    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+
+    if (id) {
+      const ok = await updateMemberPermissionById(id, permission);
+      if (!ok) {
+        return NextResponse.json({ error: 'No member found with that id.' }, { status: 404 });
+      }
+      return NextResponse.json({ success: true, id, permission });
+    }
+
+    if (!email) {
+      return NextResponse.json(
+        { error: 'Provide member id or email, and permission.' },
         { status: 400 }
       );
     }

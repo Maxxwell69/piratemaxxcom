@@ -158,6 +158,71 @@ export async function updateMemberPermission(
   return true;
 }
 
+export async function updateMemberPermissionById(
+  id: string,
+  permission: CommunityPermission
+): Promise<boolean> {
+  const store = await getMemberStore();
+  const idx = store.members.findIndex((m) => m.id === id);
+  if (idx === -1) return false;
+  store.members[idx] = { ...store.members[idx], permission };
+  await setMemberStore(store);
+  return true;
+}
+
+/** All members for admin (no password). Sorted newest first. */
+export async function listMembersForAdmin(): Promise<CommunityMemberPublic[]> {
+  const { members } = await getMemberStore();
+  const rows = members.map((raw) => toPublicMember(normalizeMember(raw)));
+  return rows.sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0));
+}
+
+export interface FanDirectoryEntry {
+  id: string;
+  displayName: string;
+  avatarUrl?: string;
+  bioPreview?: string;
+}
+
+/** Public fan cards for /community/fans (no email). */
+export async function listFanDirectoryEntries(): Promise<FanDirectoryEntry[]> {
+  const { members } = await getMemberStore();
+  return members
+    .map((raw) => normalizeMember(raw))
+    .map((m) => ({
+      id: m.id,
+      displayName: m.displayName,
+      avatarUrl: m.avatarUrl,
+      bioPreview:
+        m.bio && m.bio.length > 140 ? `${m.bio.slice(0, 137)}…` : m.bio,
+    }))
+    .sort((a, b) => a.displayName.localeCompare(b.displayName, undefined, { sensitivity: 'base' }));
+}
+
+/** Public profile fields for a fan page (no email). */
+export interface FanPublicProfile {
+  id: string;
+  displayName: string;
+  permission: CommunityPermission;
+  createdAt: string;
+  avatarUrl?: string;
+  bio?: string;
+  socials?: MemberSocials;
+}
+
+export function toFanPublicProfile(m: CommunityMemberRecord): FanPublicProfile {
+  const n = normalizeMember(m);
+  return {
+    id: n.id,
+    displayName: n.displayName,
+    permission: n.permission,
+    createdAt: n.createdAt,
+    avatarUrl: n.avatarUrl,
+    bio: n.bio,
+    socials: n.socials,
+  };
+}
+
 export interface MemberProfileUpdates {
   displayName?: string;
   avatarUrl?: string | null;

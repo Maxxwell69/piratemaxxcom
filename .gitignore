@@ -43,3 +43,6 @@ data/portfolio-user.json
 
 # Community members (local dev file fallback)
 data/community-members.json
+
+# Fan lounge chat (local dev file fallback)
+data/community-chat.json

@@ -10,5 +10,6 @@ export const mainNav: NavLink[] = [
   { href: '/gaming', label: 'Gaming' },
   { href: '/portfolio', label: 'Portfolio' },
   { href: '/links', label: 'Links' },
+  { href: '/community/fans', label: 'Fans' },
   { href: '/contact', label: 'Contact' },
 ];

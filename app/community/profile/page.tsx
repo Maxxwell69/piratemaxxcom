@@ -36,6 +36,17 @@ export default async function CommunityProfilePage() {
         <ProfileLogout />
         <ul className="mt-10 space-y-2 text-sm text-gray-400">
           <li>
+            <Link href="/community/fans" className="text-pirate-gold hover:underline">
+              Fan crew &amp; chat
+            </Link>{' '}
+            — directory, your public card, and fan lounge.
+          </li>
+          <li>
+            <Link href={`/community/fans/${session.id}`} className="text-pirate-gold hover:underline">
+              Your public fan page
+            </Link>
+          </li>
+          <li>
             <Link href="/community/super-fans" className="text-pirate-gold hover:underline">
               Super fan lounge
             </Link>{' '}

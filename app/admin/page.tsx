@@ -26,6 +26,17 @@ export default function AdminHomePage() {
               </span>
             </Link>
           </li>
+          <li>
+            <Link
+              href="/admin/community"
+              className="block rounded-lg border border-pirate-steel bg-pirate-charcoal px-4 py-4 text-white transition hover:border-pirate-gold/50"
+            >
+              <span className="font-semibold">Community members</span>
+              <span className="mt-1 block text-sm text-gray-400">
+                View all sign-ups, change fan / super fan / mod roles, open public fan pages.
+              </span>
+            </Link>
+          </li>
         </ul>
       </div>
     </div>
