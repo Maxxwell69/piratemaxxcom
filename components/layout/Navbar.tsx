@@ -10,6 +10,8 @@ import { CommunityNavAuth } from '@/components/layout/CommunityNavAuth';
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const getLinkProps = (external?: boolean) =>
+    external ? { target: '_blank', rel: 'noreferrer noopener' } : {};
 
   return (
     <header className="sticky top-0 z-50 border-b border-pirate-steel/80 bg-pirate-black/95 backdrop-blur-sm">
@@ -36,6 +38,7 @@ export function Navbar() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
+                    {...getLinkProps(item.external)}
                     className="text-sm font-medium text-gray-300 transition hover:text-pirate-gold"
                   >
                     {item.label}
@@ -78,6 +81,7 @@ export function Navbar() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
+                    {...getLinkProps(item.external)}
                     className="block rounded-md px-3 py-2 text-gray-300 hover:bg-pirate-steel hover:text-white"
                     onClick={() => setOpen(false)}
                   >
